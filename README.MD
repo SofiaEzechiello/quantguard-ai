@@ -1,258 +1,123 @@
-QuantGuard AI
-Finanças quantitativas como camada de validação para análises produzidas por Inteligência Artificial.
+# QuantGuard AI
 
-Uma resposta financeira gerada por IA pode parecer convincente. Mas ela faz sentido quando colocada à prova por modelos quantitativos?**
+### Finanças quantitativas como camada de validação para análises produzidas por Inteligência Artificial
+
+**Uma resposta financeira gerada por IA pode parecer convincente. Mas ela faz sentido quando colocada à prova por modelos quantitativos?**
 
 O **QuantGuard AI** nasceu a partir dessa pergunta.
 
-Modelos de linguagem conseguem produzir rapidamente análises sobre risco, alocação de portfólio, cenários de mercado e precificação de ativos. O problema é que uma resposta bem escrita não necessariamente é uma resposta financeiramente consistente.
+Modelos de linguagem conseguem produzir análises sobre risco, alocação de portfólio e precificação de ativos. Entretanto, uma resposta bem formulada não necessariamente é financeiramente consistente.
 
-Por isso, o objetivo deste projeto não é desenvolver mais um agente de IA para falar sobre mercado financeiro.
+A proposta do projeto é utilizar **modelos quantitativos como benchmark para avaliar outputs produzidos por Inteligência Artificial**.
 
-A proposta é fazer o caminho contrário:
+### Visão geral da plataforma
 
-**usar métodos quantitativos como benchmark para auditar aquilo que uma IA responde.**
+![Visão geral do QuantGuard AI](assets/quantguard-overview.png)
 
-I. A ideia
+## I. A ideia
 
-O projeto constrói uma carteira de ações brasileiras e acompanha um fluxo semelhante ao de uma análise financeira real:
+O QuantGuard acompanha um fluxo semelhante ao de uma análise financeira:
 
 **alocação → risco → stress → derivativos → validação da IA**
 
-Para cada etapa, o QuantGuard utiliza modelos quantitativos formais para construir um resultado de referência.
+Os modelos quantitativos produzem resultados de referência, que posteriormente podem ser comparados às respostas fornecidas por uma IA.
 
-Depois, esse resultado pode ser comparado ao output produzido por uma IA.
+O módulo de auditoria classifica as divergências em:
 
-O sistema mede a diferença entre os dois e classifica o resultado em:
-
-* **PASS** — resposta suficientemente próxima do benchmark;
+* **PASS** — resultado suficientemente próximo do benchmark;
 * **REVIEW** — resultado plausível, mas que merece revisão;
 * **FAIL** — divergência relevante e necessidade de revisão humana.
 
-A ideia central é simples:
+## II. Portfolio Intelligence
 
-> IA pode auxiliar a análise financeira, mas resultados quantitativos importantes não deveriam ser aceitos apenas porque parecem plausíveis.
+O projeto utiliza dados históricos de:
 
+* PETR4;
+* VALE3;
+* ITUB4;
+* WEGE3.
 
-II. Portfolio Intelligence
+São calculados retornos, volatilidades e covariâncias, além da simulação de **10.000 carteiras** para construção da Efficient Frontier.
 
-A primeira etapa do projeto pergunta:
+**Maximum Sharpe Portfolio:** carteira que busca maximizar o retorno ajustado ao risco.
 
-Como essa carteira deveria ser alocada considerando o trade-off entre risco e retorno?
+**Minimum Variance Portfolio:** carteira que busca minimizar a volatilidade.
 
-São utilizados dados históricos de:
+A análise utiliza também validação **out-of-sample**:
 
-* PETR4
-* VALE3
-* ITUB4
-* WEGE3
+**Treino:** 2021–2024, período utilizado para otimização dos pesos.
 
-A partir deles, o projeto calcula retornos, volatilidades, covariâncias e simula **10.000 carteiras diferentes**.
+**Teste:** 2025–2026, período utilizado para avaliar esses mesmos pesos em dados que o modelo não utilizou durante a otimização.
 
-São identificadas duas soluções importantes da Teoria Moderna de Portfólio:
+Os resultados são comparados ainda a uma carteira **Equal Weight**, com 25% em cada ativo.
 
-Maximum Sharpe Portfolio: Carteira que busca o maior retorno ajustado ao risco.
+A proposta é verificar se uma solução matematicamente ótima no período histórico permanece eficiente quando exposta a dados futuros.
 
-Minimum Variance Portfolio: Carteira com a menor volatilidade possível dentro do universo analisado.
+![Portfolio Intelligence](assets/quantguard-portfolio.png)
 
-A Efficient Frontier permite visualizar como as diferentes combinações de ativos se distribuem entre risco e retorno.
+## III. Risk Engine
 
-Mas otimização histórica funciona no futuro? Esse é um ponto importante do projeto.
+O QuantGuard calcula o risco da carteira por três medidas principais:
 
-O QuantGuard não utiliza toda a base de dados para otimizar e depois avaliar a mesma carteira.
+**Parametric VaR:** estima o Value at Risk por meio de uma abordagem paramétrica.
 
-Os dados são separados em:
+**Historical VaR:** utiliza diretamente a distribuição histórica dos retornos.
 
-**Treino**
+**Expected Shortfall:** estima a perda média esperada nos casos em que o VaR é ultrapassado.
 
-`2021 → 2024`
+## IV. VaR Backtesting
 
-usado para encontrar os pesos ótimos.
+O VaR calculado no período de treino é testado posteriormente nos dados out-of-sample.
 
-**Teste**
+O sistema identifica quantas vezes a perda efetivamente observada ultrapassou o limite previsto.
 
-`2025 → 2026`
+Para um VaR de 95%, espera-se uma proporção de violações próxima de 5%. Uma frequência significativamente superior pode indicar **subestimação do risco**.
 
-usado para avaliar esses mesmos pesos em informações que o modelo não utilizou durante a otimização.
+## V. Stress Testing
 
-Isso permite uma **validação out-of-sample**.
+O projeto utiliza dois tipos de cenário.
 
-As carteiras de Maximum Sharpe e Minimum Variance também são comparadas a um benchmark extremamente simples:
+**Historical Stress:** aplicação dos pesos atuais da carteira ao comportamento observado durante o crash da COVID-19 em 2020.
 
-**Equal Weight — 25% em cada ativo.**
+**Market Factor Stress:** estimação da sensibilidade dos ativos ao Ibovespa e simulação de um choque de **-20% no índice**.
 
-Essa comparação ajuda a mostrar um problema conhecido de modelos de otimização:
+O beta utilizado na análise é definido por:
 
-> uma carteira matematicamente ótima no passado não necessariamente permanecerá ótima no futuro.
-
----
-
-# ⚠️ Risk Engine
-
-Depois de escolher a carteira, a próxima pergunta é:
-
-> **Quanto podemos perder?**
-
-O QuantGuard calcula o risco da carteira por diferentes abordagens.
-
-### Parametric VaR
-
-Estima o Value at Risk assumindo uma distribuição paramétrica para os retornos.
-
-### Historical VaR
-
-Utiliza diretamente a distribuição observada dos retornos históricos.
-
-### Expected Shortfall
-
-O VaR informa um limite de perda associado a determinado nível de confiança.
-
-O Expected Shortfall responde uma pergunta adicional:
-
-> **quando ultrapassamos esse limite, qual é a perda média esperada?**
-
-Isso permite observar melhor o comportamento da cauda da distribuição.
-
----
-
-# 🧪 VaR Backtesting
-
-Calcular VaR não é suficiente.
-
-Também é necessário verificar se o modelo teria funcionado na prática.
-
-Por isso, o QuantGuard utiliza o VaR estimado no período de treino e observa sua performance nos dados posteriores.
-
-O sistema registra quantas vezes a perda real da carteira ultrapassou o VaR previsto.
-
-Para um VaR de 95%, por exemplo, seria esperado que aproximadamente 5% das observações ultrapassassem o limite estimado.
-
-Uma frequência de violações muito maior pode indicar:
-
-**subestimação de risco pelo modelo.**
-
-Essa etapa transforma o cálculo de risco em um problema de **validação de modelo**.
-
----
-
-# 🌪️ Stress Testing
-
-Mercados financeiros não se comportam sempre dentro das condições observadas em períodos normais.
-
-Por isso, o projeto inclui cenários de stress.
-
-## COVID-19 Crash
-
-Os pesos da carteira atual são aplicados ao comportamento real dos mesmos ativos durante o crash de 2020.
-
-A pergunta passa a ser:
-
-> **O que teria acontecido com essa carteira se ela estivesse posicionada durante aquele período?**
-
-O sistema calcula:
-
-* impacto individual sobre os ativos;
-* retorno da carteira;
-* perda financeira estimada;
-* valor final da carteira após o choque.
-
----
-
-## Market Factor Stress
-
-Também é calculada a sensibilidade histórica de cada ativo ao Ibovespa.
-
-Para isso, é estimado o beta:
-
-[
+$$
 \beta_i = \frac{Cov(R_i,R_m)}{Var(R_m)}
-]
+$$
 
-A partir desses betas, o QuantGuard consegue simular um choque de mercado, como:
+Os testes estimam o impacto do cenário sobre os ativos, a perda da carteira e seu valor após o choque.
 
-**Ibovespa -20%**
+![Risk e Stress Testing](assets/quantguard-risk.png)
 
-e estimar como cada ativo e a carteira completa tenderiam a reagir.
+## VI. Derivatives Engine
 
----
+O projeto compara dois métodos independentes para precificação de uma opção europeia.
 
-# 📈 Derivatives Engine
+**Black-Scholes:** solução analítica para o preço da opção.
 
-A etapa seguinte aborda precificação de derivativos.
+**Monte Carlo:** simulação do processo estocástico do ativo e cálculo do payoff esperado descontado.
 
-O projeto calcula o preço de uma opção europeia utilizando dois métodos independentes:
-
-### Black-Scholes
-
-Solução analítica fechada para precificação da opção.
-
-### Monte Carlo
-
-Simulação do processo estocástico do preço do ativo e cálculo do payoff esperado descontado.
-
-Os dois modelos são então comparados.
-
-Na execução atual do projeto:
+Na execução atual:
 
 **Black-Scholes:** R$ 10,4506
 **Monte Carlo:** R$ 10,4205
-**Diferença:** aproximadamente **0,29%**
+**Diferença:** aproximadamente **0,29%**.
 
-A convergência entre os dois métodos funciona como uma forma de **cross-model validation**.
+A proximidade entre os resultados funciona como uma forma de **cross-model validation**.
 
----
+## VII. AI Audit
 
-# 🤖 AI Audit
+O módulo de auditoria foi estruturado para avaliar três problemas.
 
-Esta é a camada que conecta todo o projeto à Inteligência Artificial.
+**Portfolio Allocation:** compara a performance da carteira sugerida pela IA com o benchmark quantitativo por meio do Sharpe Ratio.
 
-O QuantGuard pode receber um resultado produzido por uma IA e compará-lo ao benchmark quantitativo calculado pelo sistema.
+**Risk Estimation:** compara uma estimativa de VaR fornecida pela IA ao resultado calculado pelo Risk Engine.
 
-Atualmente são avaliados três tipos de problema:
+**Option Pricing:** compara a estimativa da IA aos preços produzidos por Black-Scholes e Monte Carlo.
 
-### Portfolio Allocation
-
-A alocação sugerida pela IA é transformada em uma carteira e avaliada no período out-of-sample.
-
-Em vez de simplesmente perguntar:
-
-> “os pesos escolhidos pela IA são iguais aos do Markowitz?”
-
-o sistema compara a consequência econômica das duas decisões por meio do **Sharpe Ratio**.
-
----
-
-### Risk Estimation
-
-A estimativa de VaR fornecida pela IA é comparada ao benchmark quantitativo.
-
-O sistema calcula:
-
-* erro percentual;
-* score de precisão;
-* classificação da resposta.
-
----
-
-### Option Pricing
-
-A IA recebe os mesmos parâmetros utilizados na precificação da opção.
-
-Sua estimativa pode então ser comparada aos resultados de:
-
-**Black-Scholes + Monte Carlo**
-
-permitindo identificar divergências relevantes.
-
----
-
-# 🛡️ Human Review
-
-O objetivo do QuantGuard não é concluir que uma IA é simplesmente “boa” ou “ruim” em finanças.
-
-A proposta é identificar **quando a resposta pode ser utilizada com confiança e quando deve existir revisão humana**.
-
-O módulo de auditoria produz métricas como:
+A auditoria considera:
 
 ```text
 Numerical Accuracy
@@ -261,91 +126,64 @@ PASS / REVIEW / FAIL
 Human Review Required
 ```
 
-A versão atual utiliza a resposta da IA como uma entrada independente no sistema.
+A resposta da IA é fornecida ao sistema como uma entrada independente, sem acesso prévio ao resultado quantitativo utilizado como benchmark.
 
-Essa separação é proposital: o modelo que está sendo auditado não recebe previamente o resultado quantitativo utilizado como benchmark.
+![AI Audit](assets/quantguard-ai-audit.png)
 
----
+## VIII. Human Review
 
-# 🧠 Arquitetura
+O objetivo do QuantGuard não é determinar se uma IA é simplesmente boa ou ruim em finanças.
+
+A proposta é identificar **quando um output financeiro está suficientemente próximo de um benchmark quantitativo e quando uma revisão humana deve ser realizada**.
+
+Essa camada de validação representa o ponto central do projeto.
+
+## IX. Arquitetura
 
 ```text
 Market Data
      ↓
 Returns & Statistics
      ↓
-┌─────────────────────────────┐
-│ Portfolio Engine            │
-│ Markowitz / Sharpe / MVP    │
-└─────────────────────────────┘
+Portfolio Engine
+Markowitz / Max Sharpe / Min Variance
      ↓
-┌─────────────────────────────┐
-│ Risk Engine                 │
-│ VaR / ES / Backtesting      │
-└─────────────────────────────┘
+Risk Engine
+VaR / Expected Shortfall / Backtesting
      ↓
-┌─────────────────────────────┐
-│ Stress Engine               │
-│ Historical / Factor Stress  │
-└─────────────────────────────┘
+Stress Engine
+Historical Stress / Factor Stress
      ↓
-┌─────────────────────────────┐
-│ Derivatives Engine          │
-│ Black-Scholes / Monte Carlo │
-└─────────────────────────────┘
+Derivatives Engine
+Black-Scholes / Monte Carlo
      ↓
-┌─────────────────────────────┐
-│ AI Audit                    │
-│ Benchmark × AI Output       │
-└─────────────────────────────┘
+AI Audit
+Benchmark × AI Output
      ↓
-       Dashboard
+Dashboard
 ```
 
----
+## X. Dashboard
 
-# 🖥️ Dashboard
+A interface foi desenvolvida em **Streamlit** e dividida em cinco áreas:
 
-O projeto possui uma interface desenvolvida em **Streamlit** dividida em cinco áreas:
+**Portfolio:** Efficient Frontier, composição das carteiras e validação out-of-sample.
 
-### Portfolio
+**Risk:** VaR, Expected Shortfall e backtesting.
 
-Efficient Frontier, composição das carteiras e validação out-of-sample.
+**Stress Tests:** cenários históricos e choques de mercado.
 
-### Risk
+**Derivatives:** comparação entre Black-Scholes e Monte Carlo.
 
-VaR, Expected Shortfall e backtesting.
+**AI Audit:** comparação dos outputs de IA com os benchmarks quantitativos.
 
-### Stress Tests
+## XI. Tecnologias
 
-Cenários históricos e choques de mercado.
+**Linguagem:** Python.
 
-### Derivatives
+**Bibliotecas:** Pandas, NumPy, SciPy, yfinance, Plotly e Streamlit.
 
-Comparação entre Black-Scholes e Monte Carlo.
-
-### AI Audit
-
-Avaliação dos outputs produzidos pela IA e Reliability Score.
-
-> **Adicionar aqui uma imagem do dashboard**
-
----
-
-# 🛠️ Tecnologias
-
-**Python**
-
-Bibliotecas principais:
-
-* Pandas
-* NumPy
-* SciPy
-* yfinance
-* Plotly
-* Streamlit
-
-O projeto foi organizado em módulos independentes:
+Estrutura principal:
 
 ```text
 src/
@@ -356,11 +194,9 @@ src/
 └── ai_audit.py
 ```
 
-O `app.py` integra os diferentes motores quantitativos e apresenta os resultados no dashboard.
+O `app.py` integra os diferentes módulos e apresenta os resultados no dashboard.
 
----
-
-# ▶️ Executando o projeto
+## XII. Execução
 
 Clone o repositório:
 
@@ -368,7 +204,7 @@ Clone o repositório:
 git clone <URL-DO-REPOSITORIO>
 ```
 
-Entre na pasta:
+Acesse a pasta:
 
 ```bash
 cd quantguard-ai
@@ -380,26 +216,8 @@ Instale as dependências:
 pip install -r requirements.txt
 ```
 
-Execute o dashboard:
+Execute:
 
 ```bash
 streamlit run app.py
 ```
-
----
-
-# 🔭 Próximos passos
-
-O QuantGuard foi desenvolvido como um MVP e pode ser expandido em diferentes direções.
-
-Entre elas:
-
-* integração direta com APIs de modelos de linguagem;
-* avaliação automática do raciocínio financeiro textual da IA;
-* novos cenários macroeconômicos de stress;
-* stress de juros com duration e convexidade;
-* modelos adicionais de risco de cauda;
-* Greeks e outras análises de derivativos;
-* histórico de auditorias realizadas;
-* comparação entre diferentes modelos de IA.
-
