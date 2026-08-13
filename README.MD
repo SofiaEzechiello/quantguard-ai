@@ -12,7 +12,9 @@ A proposta do projeto é utilizar **modelos quantitativos como benchmark para av
 
 ### Visão geral da plataforma
 
-![Visão geral do QuantGuard AI](assets/quantguard-overview.png)
+![Visão geral do QuantGuard AI] <p align="center">
+  <img src="assets/foto1.png" width="900">
+</p>
 
 ## I. A ideia
 
@@ -53,8 +55,6 @@ Os resultados são comparados ainda a uma carteira **Equal Weight**, com 25% em 
 
 A proposta é verificar se uma solução matematicamente ótima no período histórico permanece eficiente quando exposta a dados futuros.
 
-![Portfolio Intelligence](assets/quantguard-portfolio.png)
-
 ## III. Risk Engine
 
 O QuantGuard calcula o risco da carteira por três medidas principais:
@@ -65,6 +65,11 @@ O QuantGuard calcula o risco da carteira por três medidas principais:
 
 **Expected Shortfall:** estima a perda média esperada nos casos em que o VaR é ultrapassado.
 
+<p align="center">
+  <img src="assets/foto2.png" width="900">
+</p>
+
+
 ## IV. VaR Backtesting
 
 O VaR calculado no período de treino é testado posteriormente nos dados out-of-sample.
@@ -72,6 +77,7 @@ O VaR calculado no período de treino é testado posteriormente nos dados out-of
 O sistema identifica quantas vezes a perda efetivamente observada ultrapassou o limite previsto.
 
 Para um VaR de 95%, espera-se uma proporção de violações próxima de 5%. Uma frequência significativamente superior pode indicar **subestimação do risco**.
+
 
 ## V. Stress Testing
 
@@ -89,7 +95,10 @@ $$
 
 Os testes estimam o impacto do cenário sobre os ativos, a perda da carteira e seu valor após o choque.
 
-![Risk e Stress Testing](assets/quantguard-risk.png)
+![Risk e Stress Testing]<p align="center">
+  <img src="assets/foto3.png" width="900">
+</p>
+
 
 ## VI. Derivatives Engine
 
@@ -106,6 +115,11 @@ Na execução atual:
 **Diferença:** aproximadamente **0,29%**.
 
 A proximidade entre os resultados funciona como uma forma de **cross-model validation**.
+
+<p align="center">
+  <img src="assets/foto4.png" width="900">
+</p>
+
 
 ## VII. AI Audit
 
@@ -128,7 +142,10 @@ Human Review Required
 
 A resposta da IA é fornecida ao sistema como uma entrada independente, sem acesso prévio ao resultado quantitativo utilizado como benchmark.
 
-![AI Audit](assets/quantguard-ai-audit.png)
+![AI Audit]<p align="center">
+  <img src="assets/foto5.png" width="900">
+</p>
+
 
 ## VIII. Human Review
 
