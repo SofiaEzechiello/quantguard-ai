@@ -12,7 +12,7 @@ A proposta do projeto é utilizar **modelos quantitativos como benchmark para av
 
 ### Visão geral da plataforma
 
-![Visão geral do QuantGuard AI] <p align="center">
+<p align="center">
   <img src="assets/foto1.png" width="900">
 </p>
 
@@ -95,7 +95,7 @@ $$
 
 Os testes estimam o impacto do cenário sobre os ativos, a perda da carteira e seu valor após o choque.
 
-![Risk e Stress Testing]<p align="center">
+<p align="center">
   <img src="assets/foto3.png" width="900">
 </p>
 
@@ -142,7 +142,7 @@ Human Review Required
 
 A resposta da IA é fornecida ao sistema como uma entrada independente, sem acesso prévio ao resultado quantitativo utilizado como benchmark.
 
-![AI Audit]<p align="center">
+<p align="center">
   <img src="assets/foto5.png" width="900">
 </p>
 
