@@ -193,8 +193,9 @@ QuantGuard therefore implements the **Kupiec Proportion of Failures Test**.
 The null hypothesis is:
 
 [
-H_0:
-p_{\text{observed}}
+$$
+H_0: p_{\text{observed}} = p_{\text{expected}}
+$$
 ===================
 
 p_{\text{expected}}
