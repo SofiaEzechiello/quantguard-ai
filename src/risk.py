@@ -242,7 +242,7 @@ def teste_kupiec(
             else "DO NOT REJECT"
         ),
     }
-
+teste_kupiec.__test__ = False
 
 # ============================================================
 # BACKTEST DE VaR
