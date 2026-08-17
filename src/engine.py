@@ -9,9 +9,6 @@ from config import (
     DATA_CORTE,
     VALOR_CARTEIRA,
     CONFIANCA,
-    VALOR_IA_VAR_DEMO,
-    VALOR_IA_OPTION_DEMO,
-    PESOS_IA_DEMO,
 )
 
 from src.portfolio import (
@@ -44,11 +41,6 @@ from src.stress import (
 )
 
 from src.derivatives import comparar_modelos
-
-from src.ai_audit import (
-    auditar_resultado,
-    auditar_portfolio_por_sharpe,
-)
 
 
 def executar_modelos():
@@ -273,51 +265,10 @@ def executar_modelos():
     )
 
     # ========================================================
-    # 8. AI AUDIT
-    # Valores DEMO temporários.
-    # Vamos substituir isso posteriormente.
+    # 8. BENCHMARK PARA AUDITORIA DE IA
     # ========================================================
 
-    auditoria_var = auditar_resultado(
-        nome_teste="Historical VaR",
-        valor_referencia=var_hist,
-        valor_ia=VALOR_IA_VAR_DEMO,
-    )
-
-    pesos_ia_portfolio = pd.Series(
-        PESOS_IA_DEMO
-    ).reindex(teste.columns)
-
-    resultado_portfolio_ia = avaliar_portfolio(
-        pesos_ia_portfolio,
-        teste,
-    )
-
-    sharpe_quant = resultado_max_sharpe["sharpe"]
-    sharpe_ia = resultado_portfolio_ia["sharpe"]
-
-    auditoria_portfolio = (
-        auditar_portfolio_por_sharpe(
-            sharpe_quant,
-            sharpe_ia,
-        )
-    )
-
-    preco_black_scholes = (
-        resultado_derivativos["black_scholes"]
-    )
-
-    auditoria_option = auditar_resultado(
-        nome_teste="Option Pricing",
-        valor_referencia=preco_black_scholes,
-        valor_ia=VALOR_IA_OPTION_DEMO,
-    )
-
-    score_geral = (
-        auditoria_var["score_numerico"]
-        + auditoria_portfolio["score_numerico"]
-        + auditoria_option["score_numerico"]
-    ) / 3
+    preco_black_scholes = resultado_derivativos["black_scholes"]
 
     # ========================================================
     # 9. RESULTADOS
@@ -335,42 +286,42 @@ def executar_modelos():
         "cov_anual": cov_anual,
         "volatilidade_anual": volatilidade_anual,
 
-        # Simulação / Markowitz
+        # Simulação de portfólios
         "pesos_simulados": pesos_simulados,
         "retornos_simulados": retornos_simulados,
         "riscos": riscos,
         "sharpes": sharpes,
 
-        # Pesos
-        "pesos_max_sharpe_array": pesos_max_sharpe_array,
+        # Maximum Sharpe
+        "max_sharpe": max_sharpe,
         "pesos_max_sharpe": pesos_max_sharpe,
-        "pesos_min_variancia": pesos_min_variancia,
-        "pesos_equal": pesos_equal,
-
-        # Portfolio in-sample
+        "pesos_max_sharpe_array": pesos_max_sharpe_array,
         "retorno_max": retorno_max,
         "risco_max": risco_max,
         "sharpe_max": sharpe_max,
 
+        # Minimum Variance
+        "min_variancia": min_variancia,
+        "pesos_min_variancia": pesos_min_variancia,
         "retorno_min": retorno_min,
         "risco_min": risco_min,
         "sharpe_min": sharpe_min,
 
-        # Portfolio out-of-sample
+        # Equal Weight
+        "pesos_equal": pesos_equal,
+
+        # Out-of-sample
         "resultado_max_sharpe": resultado_max_sharpe,
         "resultado_min_variancia": resultado_min_variancia,
         "resultado_equal": resultado_equal,
-
         "retornos_oos_max": retornos_oos_max,
         "retornos_oos_min": retornos_oos_min,
         "retornos_oos_equal": retornos_oos_equal,
         "performance_oos": performance_oos,
 
-        # Retornos da carteira
+        # Risk
         "retornos_carteira_treino": retornos_carteira_treino,
         "retornos_carteira_teste": retornos_carteira_teste,
-
-        # Risk
         "var_param": var_param,
         "var_hist": var_hist,
         "es": es,
@@ -385,13 +336,4 @@ def executar_modelos():
         # Derivativos
         "resultado_derivativos": resultado_derivativos,
         "preco_black_scholes": preco_black_scholes,
-
-        # AI Audit
-        "auditoria_var": auditoria_var,
-        "resultado_portfolio_ia": resultado_portfolio_ia,
-        "sharpe_quant": sharpe_quant,
-        "sharpe_ia": sharpe_ia,
-        "auditoria_portfolio": auditoria_portfolio,
-        "auditoria_option": auditoria_option,
-        "score_geral": score_geral,
     }
