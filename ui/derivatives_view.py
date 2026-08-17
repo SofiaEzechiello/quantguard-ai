@@ -1,36 +1,75 @@
-"""derivatives_view.py - visualização do laboratório de derivativos
-"""
+"""Visualização do módulo de derivativos."""
 
-with aba_derivatives:
+import pandas as pd
+import streamlit as st
+import plotly.express as px
+
+from ui.charts import configurar_figura
+
+
+def render_derivatives(resultados):
+
+    resultado_derivativos = resultados[
+        "resultado_derivativos"
+    ]
+
+    # ========================================================
+    # CABEÇALHO
+    # ========================================================
+
     st.markdown("## Derivatives Lab")
+
     st.caption(
         "European call pricing with closed-form Black–Scholes and "
         "Monte Carlo cross-validation."
     )
 
+    # ========================================================
+    # MÉTRICAS
+    # ========================================================
+
     col1, col2, col3 = st.columns(3)
 
     col1.metric(
         "BLACK–SCHOLES",
-        f"R$ {resultado_derivativos['black_scholes']:.4f}",
+        (
+            f"R$ "
+            f"{resultado_derivativos['black_scholes']:.4f}"
+        ),
     )
 
     col2.metric(
         "MONTE CARLO",
-        f"R$ {resultado_derivativos['monte_carlo']:.4f}",
+        (
+            f"R$ "
+            f"{resultado_derivativos['monte_carlo']:.4f}"
+        ),
     )
 
     col3.metric(
         "MODEL DEVIATION",
-        f"{resultado_derivativos['diferenca_percentual']:.2f}%",
+        (
+            f"{resultado_derivativos['diferenca_percentual']:.2f}%"
+        ),
     )
+
+    # ========================================================
+    # COMPARAÇÃO DOS MODELOS
+    # ========================================================
 
     deriv_df = pd.DataFrame(
         {
-            "Model": ["Black–Scholes", "Monte Carlo"],
+            "Model": [
+                "Black–Scholes",
+                "Monte Carlo",
+            ],
             "Option Price": [
-                resultado_derivativos["black_scholes"],
-                resultado_derivativos["monte_carlo"],
+                resultado_derivativos[
+                    "black_scholes"
+                ],
+                resultado_derivativos[
+                    "monte_carlo"
+                ],
             ],
         }
     )
@@ -41,7 +80,10 @@ with aba_derivatives:
         y="Option Price",
         text_auto=".4f",
     )
-    fig_deriv.update_traces(marker_color="#6C4CE3")
+
+    fig_deriv.update_traces(
+        marker_color="#6C4CE3"
+    )
 
     configurar_figura(
         fig_deriv,
@@ -49,9 +91,17 @@ with aba_derivatives:
         y_title="Call Price (R$)",
     )
 
-    st.plotly_chart(fig_deriv, use_container_width=True)
+    st.plotly_chart(
+        fig_deriv,
+        use_container_width=True,
+    )
+
+    # ========================================================
+    # INPUTS
+    # ========================================================
 
     st.caption(
         "Inputs: S = 100 | K = 100 | T = 1 year | "
-        "r = 5% | σ = 20% | Monte Carlo = 100,000 simulations."
+        "r = 5% | σ = 20% | "
+        "Monte Carlo = 100,000 simulations."
     )

@@ -1,8 +1,14 @@
+"""portfolio.py - funções para análise e otimização de portfólio"""
+
 import numpy as np
 import pandas as pd
 import yfinance as yf
 import scipy.optimize as optimization
 
+
+# ============================================================
+# DADOS
+# ============================================================
 
 def carregar_dados(tickers, inicio, fim):
     dados = yf.download(
@@ -13,6 +19,11 @@ def carregar_dados(tickers, inicio, fim):
     )["Close"]
 
     return dados
+
+
+def calcular_retornos(precos):
+    retornos = precos.pct_change().dropna()
+    return retornos
 
 
 def dividir_amostra(retornos, data_corte="2025-01-01"):
@@ -32,6 +43,9 @@ def dividir_amostra(retornos, data_corte="2025-01-01"):
     return treino, teste
 
 
+# ============================================================
+# ESTATÍSTICAS
+# ============================================================
 
 def calcular_estatisticas(retornos):
     retorno_anual = retornos.mean() * 252
@@ -39,6 +53,7 @@ def calcular_estatisticas(retornos):
     volatilidade_anual = retornos.std() * np.sqrt(252)
 
     return retorno_anual, cov_anual, volatilidade_anual
+
 
 NUM_TRADING_DAYS = 252
 NUM_PORTFOLIOS = 10000
@@ -66,6 +81,11 @@ def estatisticas_portfolio(pesos, retornos, taxa_livre_risco=0.0):
 
     return retorno_portfolio, volatilidade_portfolio, sharpe
 
+
+# ============================================================
+# SIMULAÇÃO DE PORTFÓLIOS
+# ============================================================
+
 def gerar_portfolios(retornos, numero_portfolios=NUM_PORTFOLIOS):
     retornos_portfolios = []
     riscos_portfolios = []
@@ -77,7 +97,6 @@ def gerar_portfolios(retornos, numero_portfolios=NUM_PORTFOLIOS):
     rng = np.random.default_rng(42)
 
     for _ in range(numero_portfolios):
-
         pesos = rng.random(numero_ativos)
         pesos /= np.sum(pesos)
 
@@ -97,6 +116,11 @@ def gerar_portfolios(retornos, numero_portfolios=NUM_PORTFOLIOS):
         np.array(riscos_portfolios),
         np.array(sharpes)
     )
+
+
+# ============================================================
+# OTIMIZAÇÃO
+# ============================================================
 
 def otimizar_max_sharpe(retornos, taxa_livre_risco=0.0):
 
@@ -133,6 +157,7 @@ def otimizar_max_sharpe(retornos, taxa_livre_risco=0.0):
 
     return resultado
 
+
 def otimizar_minima_variancia(retornos):
 
     numero_ativos = len(retornos.columns)
@@ -167,6 +192,11 @@ def otimizar_minima_variancia(retornos):
 
     return resultado
 
+
+# ============================================================
+# AVALIAÇÃO
+# ============================================================
+
 def avaliar_portfolio(pesos, retornos):
     retorno, volatilidade, sharpe = estatisticas_portfolio(
         pesos,
@@ -187,23 +217,8 @@ def carteira_equal_weight(retornos):
 
     return pesos
 
+
 def calcular_retornos_portfolio(retornos, pesos):
     retornos_portfolio = retornos.dot(pesos)
 
     return retornos_portfolio
-
-    def dividir_amostra(retornos, data_corte="2025-01-01"):
-        data_corte = pd.Timestamp(data_corte)
-
-    retornos = retornos.sort_index()
-
-    treino = retornos[retornos.index < data_corte]
-    teste = retornos[retornos.index >= data_corte]
-
-    if treino.empty:
-        raise ValueError("A amostra de treino está vazia.")
-
-    if teste.empty:
-        raise ValueError("A amostra de teste está vazia.")
-
-    return treino, teste
