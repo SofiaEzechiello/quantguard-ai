@@ -24,6 +24,11 @@ def render_audit(resultados):
     var_hist = resultados["var_hist"]
     resultado_max_sharpe = resultados["resultado_max_sharpe"]
     preco_black_scholes = resultados["preco_black_scholes"]
+    taxa_livre_risco_teste = resultados["taxa_livre_risco_teste"]
+
+    # ========================================================
+    # CABEÇALHO
+    # ========================================================
 
     st.markdown("## AI Financial Audit")
 
@@ -35,7 +40,7 @@ def render_audit(resultados):
     st.info(
         "QuantGuard does not generate the AI response. "
         "Enter outputs produced by an external AI model below. "
-        "The quantitative benchmarks are calculated independently."
+        "Results are recalculated automatically whenever an input changes."
     )
 
     # ========================================================
@@ -50,17 +55,21 @@ def render_audit(resultados):
         valor_ia_var = st.number_input(
             "AI estimate · Historical VaR (R$)",
             min_value=0.0,
-            value=float(var_hist),
+            value=None,
             step=100.0,
+            placeholder="Enter AI estimate",
+            key="ai_var_input",
         )
 
     with col_option:
         valor_ia_option = st.number_input(
             "AI estimate · European Call Price",
             min_value=0.0,
-            value=float(preco_black_scholes),
+            value=None,
             step=0.01,
             format="%.4f",
+            placeholder="Enter AI estimate",
+            key="ai_option_input",
         )
 
     # ========================================================
@@ -98,10 +107,23 @@ def render_audit(resultados):
         f"Total allocation: {soma_pesos:.2f}%"
     )
 
+    # ========================================================
+    # VALIDAÇÃO DOS INPUTS
+    # ========================================================
+
     if abs(soma_pesos - 100.0) > 0.01:
-        st.error(
-            "Portfolio weights must sum to 100% "
-            "before the audit can be calculated."
+        st.warning(
+            f"Portfolio allocation currently sums to "
+            f"{soma_pesos:.2f}%. Adjust the weights to 100%."
+        )
+        return
+
+    if valor_ia_var is None or valor_ia_option is None:
+        st.markdown("### Audit Results")
+
+        st.info(
+            "Enter the external AI estimates for VaR and option pricing "
+            "to start the quantitative audit."
         )
         return
 
@@ -117,8 +139,9 @@ def render_audit(resultados):
     ).reindex(teste.columns)
 
     resultado_portfolio_ia = avaliar_portfolio(
-        pesos_ia,
-        teste,
+        pesos=pesos_ia,
+        retornos=teste,
+        taxa_livre_risco=taxa_livre_risco_teste,
     )
 
     sharpe_quant = resultado_max_sharpe["sharpe"]
@@ -209,7 +232,7 @@ def render_audit(resultados):
         )
 
     # ========================================================
-    # VISÃO GERAL
+    # RELIABILITY OVERVIEW
     # ========================================================
 
     st.markdown("### Reliability Overview")
