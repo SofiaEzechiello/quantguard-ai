@@ -268,7 +268,7 @@ The betas are estimated from market data rather than manually assigned.
 The derivatives module prices a **European call option** using an analytical solution and a numerical approximation under consistent assumptions.
 
 <p align="center">
-  <img src="assets/derivitives.jpg" width="900">
+  <img src="assets/derivatives.jpg" width="900">
 </p>
 
 ---
