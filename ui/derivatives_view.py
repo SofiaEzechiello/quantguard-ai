@@ -8,6 +8,10 @@ from ui.charts import configurar_figura
 
 
 def render_derivatives(resultados):
+    """
+    Renderiza a comparação entre a solução analítica
+    de Black-Scholes e a aproximação numérica por Monte Carlo.
+    """
 
     resultado_derivativos = resultados[
         "resultado_derivativos"
@@ -20,8 +24,8 @@ def render_derivatives(resultados):
     st.markdown("## Derivatives Lab")
 
     st.caption(
-        "European call pricing with closed-form Black–Scholes and "
-        "Monte Carlo cross-validation."
+        "European call pricing using the closed-form Black–Scholes "
+        "solution and a Monte Carlo numerical cross-check."
     )
 
     # ========================================================
@@ -47,19 +51,19 @@ def render_derivatives(resultados):
     )
 
     col3.metric(
-        "MODEL DEVIATION",
+        "NUMERICAL DIFFERENCE",
         (
             f"{resultado_derivativos['diferenca_percentual']:.2f}%"
         ),
     )
 
     # ========================================================
-    # COMPARAÇÃO DOS MODELOS
+    # COMPARAÇÃO
     # ========================================================
 
     deriv_df = pd.DataFrame(
         {
-            "Model": [
+            "Method": [
                 "Black–Scholes",
                 "Monte Carlo",
             ],
@@ -76,7 +80,7 @@ def render_derivatives(resultados):
 
     fig_deriv = px.bar(
         deriv_df,
-        x="Model",
+        x="Method",
         y="Option Price",
         text_auto=".4f",
     )
@@ -88,12 +92,23 @@ def render_derivatives(resultados):
     configurar_figura(
         fig_deriv,
         x_title=None,
-        y_title="Call Price (R$)",
+        y_title="European Call Price (R$)",
     )
 
     st.plotly_chart(
         fig_deriv,
         use_container_width=True,
+    )
+
+    # ========================================================
+    # INTERPRETAÇÃO
+    # ========================================================
+
+    st.info(
+        "Black–Scholes provides the analytical benchmark, while "
+        "Monte Carlo estimates the same European call price numerically "
+        "under consistent assumptions. Their proximity acts as a "
+        "reproducible implementation cross-check."
     )
 
     # ========================================================

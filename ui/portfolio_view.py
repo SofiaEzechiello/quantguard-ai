@@ -27,7 +27,6 @@ def render_portfolio(resultados):
     sharpes = resultados["sharpes"]
 
     pesos_max_sharpe_array = resultados["pesos_max_sharpe_array"]
-
     retorno_max = resultados["retorno_max"]
     risco_max = resultados["risco_max"]
     sharpe_max = resultados["sharpe_max"]
@@ -74,14 +73,15 @@ def render_portfolio(resultados):
     )
 
     # ========================================================
-    # FRONTEIRA EFICIENTE
+    # PORTFOLIO OPPORTUNITY SET
     # ========================================================
 
-    st.markdown("### Efficient Frontier")
+    st.markdown("### Portfolio Opportunity Set")
 
     st.caption(
-        "10,000 simulated portfolios. The highlighted points represent "
-        "the maximum-Sharpe and minimum-variance solutions."
+        "10,000 simulated long-only portfolios. "
+        "The highlighted points represent the maximum-Sharpe "
+        "and minimum-variance solutions."
     )
 
     fronteira = pd.DataFrame(
