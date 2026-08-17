@@ -293,15 +293,17 @@ def executar_modelos():
     )
 
     backtest_param = backtest_var(
-        retornos_carteira_teste,
-        var_param,
-        VALOR_CARTEIRA,
+    retornos_teste=retornos_carteira_teste,
+    var=var_param,
+    valor_carteira=VALOR_CARTEIRA,
+    confianca=CONFIANCA,
     )
 
     backtest_hist = backtest_var(
-        retornos_carteira_teste,
-        var_hist,
-        VALOR_CARTEIRA,
+        retornos_teste=retornos_carteira_teste,
+        var = var_hist,
+        valor_carteira = VALOR_CARTEIRA,
+        confianca=CONFIANCA
     )
 
     # ========================================================

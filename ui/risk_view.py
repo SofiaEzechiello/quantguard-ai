@@ -1,9 +1,9 @@
 """Visualização do Risk Engine."""
 
 import pandas as pd
-import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 
 from config import (
     VALOR_CARTEIRA,
@@ -14,6 +14,10 @@ from ui.charts import configurar_figura
 
 
 def render_risk(resultados):
+    """
+    Renderiza métricas de risco, backtesting out-of-sample
+    e validação estatística do VaR.
+    """
 
     retornos_carteira_treino = resultados[
         "retornos_carteira_treino"
@@ -27,7 +31,21 @@ def render_risk(resultados):
     var_hist = resultados["var_hist"]
     es = resultados["es"]
 
-    backtest_hist = resultados["backtest_hist"]
+    backtest_param = resultados[
+        "backtest_param"
+    ]
+
+    backtest_hist = resultados[
+        "backtest_hist"
+    ]
+
+    kupiec_param = backtest_param[
+        "kupiec"
+    ]
+
+    kupiec_hist = backtest_hist[
+        "kupiec"
+    ]
 
     # ========================================================
     # CABEÇALHO
@@ -36,12 +54,12 @@ def render_risk(resultados):
     st.markdown("## Risk Engine")
 
     st.caption(
-        "One-day portfolio risk estimated on the training sample and "
-        "validated on unseen observations."
+        "One-day portfolio risk estimated on the training sample "
+        "and validated on unseen out-of-sample observations."
     )
 
     # ========================================================
-    # MÉTRICAS
+    # MÉTRICAS PRINCIPAIS
     # ========================================================
 
     col1, col2, col3, col4 = st.columns(4)
@@ -98,7 +116,8 @@ def render_risk(resultados):
         )
 
         limite_hist = -(
-            var_hist / VALOR_CARTEIRA
+            var_hist
+            / VALOR_CARTEIRA
         )
 
         fig_dist.add_vline(
@@ -120,7 +139,7 @@ def render_risk(resultados):
         )
 
     # --------------------------------------------------------
-    # BACKTEST DE VaR
+    # BACKTEST DO VaR
     # --------------------------------------------------------
 
     with col_right:
@@ -194,13 +213,144 @@ def render_risk(resultados):
         )
 
     # ========================================================
-    # OBSERVAÇÃO
+    # BACKTEST SUMMARY
     # ========================================================
 
+    st.markdown("### Out-of-Sample Backtest")
+
+    esperado = (
+        1 - CONFIANCA
+    )
+
+    b1, b2, b3 = st.columns(3)
+
+    b1.metric(
+        "EXPECTED VIOLATION RATE",
+        f"{esperado:.2%}",
+    )
+
+    b2.metric(
+        "PARAMETRIC VaR",
+        f"{backtest_param['taxa_violacoes']:.2%}",
+    )
+
+    b3.metric(
+        "HISTORICAL VaR",
+        f"{backtest_hist['taxa_violacoes']:.2%}",
+    )
+
     st.caption(
-        f"Expected violation rate at "
-        f"{CONFIANCA:.0%} confidence: "
-        f"{1 - CONFIANCA:.0%}. "
-        f"Observed historical-VaR violation rate: "
-        f"{backtest_hist['taxa_violacoes']:.2%}."
+        f"Out-of-sample observations: "
+        f"{backtest_hist['observacoes']} · "
+        f"Historical VaR violations: "
+        f"{backtest_hist['violacoes']} · "
+        f"Parametric VaR violations: "
+        f"{backtest_param['violacoes']}."
+    )
+
+    # ========================================================
+    # KUPIEC TEST
+    # ========================================================
+
+    st.markdown("### Kupiec Unconditional Coverage Test")
+
+    st.caption(
+        "The Kupiec test evaluates whether the observed frequency "
+        "of VaR violations is statistically consistent with the "
+        "expected violation probability."
+    )
+
+    col_param, col_hist = st.columns(2)
+
+    # --------------------------------------------------------
+    # PARAMETRIC VaR
+    # --------------------------------------------------------
+
+    with col_param:
+
+        st.markdown("#### Parametric VaR")
+
+        k1, k2 = st.columns(2)
+
+        k1.metric(
+            "Kupiec LR",
+            f"{kupiec_param['estatistica_lr']:.3f}",
+        )
+
+        k2.metric(
+            "p-value",
+            f"{kupiec_param['p_valor']:.4f}",
+        )
+
+        st.caption(
+            f"Expected violations: "
+            f"{kupiec_param['taxa_esperada']:.2%} · "
+            f"Observed: "
+            f"{kupiec_param['taxa_observada']:.2%}"
+        )
+
+        if kupiec_param["rejeita_h0"]:
+
+            st.error(
+                "REJECT H₀ — unconditional coverage is rejected "
+                "at the 5% significance level."
+            )
+
+        else:
+
+            st.success(
+                "DO NOT REJECT H₀ — unconditional coverage is "
+                "not rejected at the 5% significance level."
+            )
+
+    # --------------------------------------------------------
+    # HISTORICAL VaR
+    # --------------------------------------------------------
+
+    with col_hist:
+
+        st.markdown("#### Historical VaR")
+
+        k1, k2 = st.columns(2)
+
+        k1.metric(
+            "Kupiec LR",
+            f"{kupiec_hist['estatistica_lr']:.3f}",
+        )
+
+        k2.metric(
+            "p-value",
+            f"{kupiec_hist['p_valor']:.4f}",
+        )
+
+        st.caption(
+            f"Expected violations: "
+            f"{kupiec_hist['taxa_esperada']:.2%} · "
+            f"Observed: "
+            f"{kupiec_hist['taxa_observada']:.2%}"
+        )
+
+        if kupiec_hist["rejeita_h0"]:
+
+            st.error(
+                "REJECT H₀ — unconditional coverage is rejected "
+                "at the 5% significance level."
+            )
+
+        else:
+
+            st.success(
+                "DO NOT REJECT H₀ — unconditional coverage is "
+                "not rejected at the 5% significance level."
+            )
+
+    # ========================================================
+    # INTERPRETAÇÃO
+    # ========================================================
+
+    st.info(
+        "A non-rejection result does not prove that a VaR model is "
+        "fully valid. The Kupiec test evaluates unconditional coverage "
+        "only; violation independence is outside the scope of this "
+        "version of QuantGuard."
     )
