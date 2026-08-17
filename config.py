@@ -1,0 +1,24 @@
+""" configuracoes para o backtest """
+
+TICKERS = [
+    "PETR4.SA",
+    "VALE3.SA",
+    "ITUB4.SA",
+    "WEGE3.SA",
+]
+
+DATA_INICIO = "2021-01-01"
+DATA_FIM = "2026-08-01"
+DATA_CORTE = "2025-01-01"
+
+VALOR_CARTEIRA = 100_000
+CONFIANCA = 0.95
+
+VALOR_IA_VAR_DEMO = 2_000
+VALOR_IA_OPTION_DEMO = 9.80
+PESOS_IA_DEMO = {
+    "PETR4.SA": 0.25,
+    "VALE3.SA": 0.25,
+    "ITUB4.SA": 0.25,
+    "WEGE3.SA": 0.25,
+}

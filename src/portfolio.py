@@ -15,16 +15,22 @@ def carregar_dados(tickers, inicio, fim):
     return dados
 
 
-def calcular_retornos(precos):
-    retornos = precos.pct_change().dropna()
+def dividir_amostra(retornos, data_corte="2025-01-01"):
+    data_corte = pd.Timestamp(data_corte)
 
-    return retornos
+    retornos = retornos.sort_index()
 
-def dividir_amostra(retornos, data_corte="2024-12-31"):
-    treino = retornos.loc[:data_corte]
-    teste = retornos.loc[data_corte:]
+    treino = retornos[retornos.index < data_corte]
+    teste = retornos[retornos.index >= data_corte]
+
+    if treino.empty:
+        raise ValueError("A amostra de treino está vazia.")
+
+    if teste.empty:
+        raise ValueError("A amostra de teste está vazia.")
 
     return treino, teste
+
 
 
 def calcular_estatisticas(retornos):
@@ -185,3 +191,19 @@ def calcular_retornos_portfolio(retornos, pesos):
     retornos_portfolio = retornos.dot(pesos)
 
     return retornos_portfolio
+
+    def dividir_amostra(retornos, data_corte="2025-01-01"):
+        data_corte = pd.Timestamp(data_corte)
+
+    retornos = retornos.sort_index()
+
+    treino = retornos[retornos.index < data_corte]
+    teste = retornos[retornos.index >= data_corte]
+
+    if treino.empty:
+        raise ValueError("A amostra de treino está vazia.")
+
+    if teste.empty:
+        raise ValueError("A amostra de teste está vazia.")
+
+    return treino, teste

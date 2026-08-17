@@ -293,6 +293,13 @@ with st.spinner("Loading market data and running quantitative models..."):
 
     retornos = calcular_retornos(precos)
 
+    print("Última data do treino:", treino.index.max())
+    print("Primeira data do teste:", teste.index.min())
+    print("Datas em comum:", treino.index.intersection(teste.index))
+    
+    assert treino.index.max() < teste.index.min()
+    assert len(treino.index.intersection(teste.index)) == 0
+
     treino, teste = dividir_amostra(
         retornos,
         data_corte=DATA_CORTE,
